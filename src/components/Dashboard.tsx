@@ -1,20 +1,20 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Users, Activity, AlertTriangle, TrendingDown, 
-  Table as TableIcon, BarChart2, Pill, ShieldCheck, HeartPulse, ClipboardList,
-  ShieldAlert, Info, CheckCircle, BookOpen, Target, FileText
+import {
+  Activity, AlertTriangle,
+  Table as TableIcon, BarChart2, ClipboardList,
+  ShieldAlert, Info, CheckCircle, BookOpen, Target
 } from 'lucide-react';
 import { Card } from './ui/Card';
 import { DataTable } from './DataTable';
-import { CaseData, AdverseEventType, OperationType } from '../types';
+import { CaseData } from '../types';
 import { filterData } from '../utils/mockData';
 import {
   OperationTypeChart, OrthoTypePieChart, PainTrendChart,
-  DemographicsChart, SpecialtyPieChart, 
+  DemographicsChart, SpecialtyPieChart,
   PatientTypePieChart, TraumaTypePieChart, TraumaTypeMonthlyTrendChart,
   DrugGroupDistributionChart, SpecificMedicationBreakdownChart, DrugModalityCompositionChart,
   SeverePainRest24Chart, SeverePainMovement24Chart, SeverePainRest72Chart, SeverePainMovement72Chart,
-  SafetyTrendChart, SafetyDistributionChart, SatisfactionChart, PromsImprovementChart, 
+  SafetyTrendChart, SafetyDistributionChart, PromsImprovementChart,
   MultiLinePainTrendChart, DischargePainTrendChart, AgeVsInitialPainScatterChart,
   PainByGenderChart, PainByOpStatusChart, PainByTraumaTypeChart, PainByDrugGroupChart,
   SatisfactionScoreDistributionChart, SatisfactionMonthlyTrendChart, PainInterferenceRadarChart,
@@ -37,7 +37,7 @@ const ChartCard = ({ title, subtitle, children, className }: any) => {
         {view === 'chart' ? <><TableIcon size={14} /><span>Table</span></> : <><BarChart2 size={14} /><span>Chart</span></>}
       </button>
     }>
-      {React.cloneElement(children as React.ReactElement, { showTable: view === 'table' })}
+      {React.cloneElement(children as React.ReactElement<{ showTable: boolean }>, { showTable: view === 'table' })}
     </Card>
   );
 };
@@ -78,7 +78,7 @@ const DefinitionCard = ({ title, thaiTitle, description, thaiDescription, numera
         TARGET: {target}
       </div>
     </div>
-    
+
     <div className="space-y-4">
       <div className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
         <p className="font-medium mb-1">Definition / นิยาม:</p>
@@ -102,24 +102,24 @@ const DefinitionCard = ({ title, thaiTitle, description, thaiDescription, numera
 
 export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, activeSection }) => {
   const [filterCriteria, setFilterCriteria] = useState<{ field: string; value: any } | null>(null);
-  
+
   const filteredData = useMemo(() => {
     let data = filterData(rawData, year, month);
     if (filterCriteria) data = data.filter((item: any) => item[filterCriteria.field] === filterCriteria.value);
     return data;
   }, [rawData, year, month, filterCriteria]);
-  
+
   const yearData = useMemo(() => filterData(rawData, year, 'All'), [rawData, year]);
 
   const totalCases = filteredData.length;
   const totalEvents = filteredData.reduce((acc, d) => acc + d.adverseEvents.length, 0);
   const casesWithEvents = filteredData.filter(d => d.adverseEvents.length > 0).length;
   const eventRate = totalCases > 0 ? ((casesWithEvents / totalCases) * 100).toFixed(1) : '0.0';
-  
+
   const severeEventsCount = filteredData.reduce((acc, d) => {
     const severe = d.adverseEvents.filter(ae => [
-      'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding', 
-      'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block', 
+      'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding',
+      'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block',
       'Catheter Migration', 'LAST (Toxicity)', 'Anaphylaxis'
     ].includes(ae as string));
     return acc + severe.length;
@@ -139,10 +139,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
               <StatCard title="QI Compliance" value="92%" subtitle="Quality Indicators met" bgColor="bg-purple-50 dark:bg-purple-900/20" textColor="text-purple-700 dark:text-purple-400" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-               <ChartCard title="Operation Type Distribution"><OperationTypeChart data={filteredData} /></ChartCard>
-               <ChartCard title="Ortho Type Distribution"><OrthoTypePieChart data={filteredData} /></ChartCard>
-               <ChartCard title="Pain Trends (Rest)" subtitle="Avg (Ignoring Empty Cells)"><PainTrendChart data={yearData} type="rest" hours="24" /></ChartCard>
-               <ChartCard title="Pain Trends (Movement)" subtitle="Avg (Ignoring Empty Cells)"><PainTrendChart data={yearData} type="movement" hours="24" /></ChartCard>
+              <ChartCard title="Operation Type Distribution"><OperationTypeChart data={filteredData} /></ChartCard>
+              <ChartCard title="Ortho Type Distribution"><OrthoTypePieChart data={filteredData} /></ChartCard>
+              <ChartCard title="Pain Trends (Rest)" subtitle="Avg (Ignoring Empty Cells)"><PainTrendChart data={yearData} type="rest" hours="24" /></ChartCard>
+              <ChartCard title="Pain Trends (Movement)" subtitle="Avg (Ignoring Empty Cells)"><PainTrendChart data={yearData} type="movement" hours="24" /></ChartCard>
             </div>
           </div>
         );
@@ -150,35 +150,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
         return (
           <div className="space-y-6 animate-in fade-in duration-500">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ChartCard 
-                title="POST-OP PAIN MANAGEMENT" 
+              <ChartCard
+                title="POST-OP PAIN MANAGEMENT"
                 subtitle="Distribution of modalities"
               >
                 <ModalityDistributionDonutChart data={filteredData} />
               </ChartCard>
-              <ChartCard 
-                title="MANAGEMENT TRENDS (YTD)" 
+              <ChartCard
+                title="MANAGEMENT TRENDS (YTD)"
                 subtitle="Modalities usage over time"
               >
                 <ModalityTrendsLineChart data={yearData} />
               </ChartCard>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <ChartCard 
-                title="MEDICATION GROUP USAGE" 
+              <ChartCard
+                title="MEDICATION GROUP USAGE"
                 subtitle="Total count by drug group (Opioids/Non/Adjuvants)"
                 className="lg:col-span-2"
               >
                 <MedicationGroupUsageBarChart data={filteredData} />
               </ChartCard>
               <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl p-6 border border-blue-100 dark:border-blue-900/30 flex flex-col justify-center">
-                 <div className="flex items-center gap-3 mb-4">
-                    <Info className="text-blue-600" size={24} />
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">Analysis Notes</h4>
-                 </div>
-                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                   "Modalities are primary methods used for post-operative analgesic delivery. If real data is not present in the current Excel upload, historical mock data is displayed to demonstrate the required visual breakdown. Current analysis shows strong utilization of Multi-modal techniques."
-                 </p>
+                <div className="flex items-center gap-3 mb-4">
+                  <Info className="text-blue-600" size={24} />
+                  <h4 className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">Analysis Notes</h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                  "Modalities are primary methods used for post-operative analgesic delivery. If real data is not present in the current Excel upload, historical mock data is displayed to demonstrate the required visual breakdown. Current analysis shows strong utilization of Multi-modal techniques."
+                </p>
               </div>
             </div>
           </div>
@@ -188,49 +188,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
           <div className="space-y-8 animate-in fade-in duration-500">
             {/* KPI Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard 
-                title="Total Adverse Events" 
-                value={totalEvents} 
-                subtitle="Reported incidents" 
+              <StatCard
+                title="Total Adverse Events"
+                value={totalEvents}
+                subtitle="Reported incidents"
                 icon={<ShieldAlert size={18} className="opacity-50" />}
-                bgColor="bg-red-50 dark:bg-red-900/20" 
-                textColor="text-red-700 dark:text-red-400" 
+                bgColor="bg-red-50 dark:bg-red-900/20"
+                textColor="text-red-700 dark:text-red-400"
               />
-              <StatCard 
-                title="Event Rate" 
-                value={`${eventRate}%`} 
-                subtitle="Cases with ≥ 1 side effect" 
+              <StatCard
+                title="Event Rate"
+                value={`${eventRate}%`}
+                subtitle="Cases with ≥ 1 side effect"
                 icon={<Activity size={18} className="opacity-50" />}
-                bgColor="bg-amber-50 dark:bg-amber-900/20" 
-                textColor="text-amber-700 dark:text-amber-400" 
+                bgColor="bg-amber-50 dark:bg-amber-900/20"
+                textColor="text-amber-700 dark:text-amber-400"
               />
-              <StatCard 
-                title="Severe Complications" 
-                value={severeEventsCount} 
-                subtitle={`${severeRate}% major intervention incidents`} 
+              <StatCard
+                title="Severe Complications"
+                value={severeEventsCount}
+                subtitle={`${severeRate}% major intervention incidents`}
                 icon={<AlertTriangle size={18} className="opacity-50" />}
-                bgColor="bg-slate-50 dark:bg-slate-800" 
-                textColor="text-slate-900 dark:text-slate-100" 
+                bgColor="bg-slate-50 dark:bg-slate-800"
+                textColor="text-slate-900 dark:text-slate-100"
               />
-              <StatCard 
-                title="Safety Success" 
-                value={`${successRate}%`} 
-                subtitle="Event-free cases" 
+              <StatCard
+                title="Safety Success"
+                value={`${successRate}%`}
+                subtitle="Event-free cases"
                 icon={<CheckCircle size={18} className="opacity-50" />}
-                bgColor="bg-green-50 dark:bg-green-900/20" 
-                textColor="text-green-700 dark:text-green-400" 
+                bgColor="bg-green-50 dark:bg-green-900/20"
+                textColor="text-green-700 dark:text-green-400"
               />
             </div>
 
             {/* General Side Effects Section */}
             <div>
               <div className="flex items-center gap-3 mb-4 px-2">
-                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">General Side Effects</h2>
-                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">General Side Effects</h2>
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <ChartCard 
-                  title="GENERAL SIDE EFFECTS (MONTHLY TREND)" 
+                <ChartCard
+                  title="GENERAL SIDE EFFECTS (MONTHLY TREND)"
                   subtitle="Incidence over time"
                   className="lg:col-span-2"
                 >
@@ -245,12 +245,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
             {/* Severe Complications Section */}
             <div>
               <div className="flex items-center gap-3 mb-4 px-2">
-                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Severe Complications</h2>
-                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Severe Complications</h2>
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <ChartCard 
-                  title="SEVERE COMPLICATIONS (MONTHLY TREND)" 
+                <ChartCard
+                  title="SEVERE COMPLICATIONS (MONTHLY TREND)"
                   subtitle="Incidence over time"
                   className="lg:col-span-2"
                 >
@@ -277,37 +277,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-               <ChartCard title="Drug Modality Distribution (Column AE)" subtitle="Analysis of Patient Therapeutic Profiles"><DrugGroupDistributionChart data={filteredData} /></ChartCard>
-               <ChartCard title="Composition Trend (Columns AB-AD)" subtitle="Longitudinal Usage of Modality Groups"><DrugModalityCompositionChart data={yearData} /></ChartCard>
-               <ChartCard title="Specific Opioids Utilization (Column AB)" subtitle="Leaderboard of most frequent opioid medications"><SpecificMedicationBreakdownChart data={filteredData} type="Opioids" /></ChartCard>
-               <ChartCard title="Specific Non-Opioids Utilization (Column AC)" subtitle="Leaderboard of non-opioid medications"><SpecificMedicationBreakdownChart data={filteredData} type="Non-Opioids" /></ChartCard>
-               <ChartCard title="Specific Adjuvants Utilization (Column AD)" subtitle="Leaderboard of adjuvant medications" className="lg:col-span-2"><SpecificMedicationBreakdownChart data={filteredData} type="Adjuvants" /></ChartCard>
+              <ChartCard title="Drug Modality Distribution (Column AE)" subtitle="Analysis of Patient Therapeutic Profiles"><DrugGroupDistributionChart data={filteredData} /></ChartCard>
+              <ChartCard title="Composition Trend (Columns AB-AD)" subtitle="Longitudinal Usage of Modality Groups"><DrugModalityCompositionChart data={yearData} /></ChartCard>
+              <ChartCard title="Specific Opioids Utilization (Column AB)" subtitle="Leaderboard of most frequent opioid medications"><SpecificMedicationBreakdownChart data={filteredData} type="Opioids" /></ChartCard>
+              <ChartCard title="Specific Non-Opioids Utilization (Column AC)" subtitle="Leaderboard of non-opioid medications"><SpecificMedicationBreakdownChart data={filteredData} type="Non-Opioids" /></ChartCard>
+              <ChartCard title="Specific Adjuvants Utilization (Column AD)" subtitle="Leaderboard of adjuvant medications" className="lg:col-span-2"><SpecificMedicationBreakdownChart data={filteredData} type="Adjuvants" /></ChartCard>
             </div>
           </div>
         );
       case 'pain-assessment':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard 
-              title="PAIN TRENDS (REST)" 
+            <ChartCard
+              title="PAIN TRENDS (REST)"
               subtitle="Average scores at 24h, 48h, 72h - Select Operation Type to Filter"
             >
               <MultiLinePainTrendChart data={yearData} type="rest" />
             </ChartCard>
-            <ChartCard 
-              title="PAIN TRENDS (MOVEMENT)" 
+            <ChartCard
+              title="PAIN TRENDS (MOVEMENT)"
               subtitle="Average scores at 24h, 48h, 72h - Select Operation Type to Filter"
             >
               <MultiLinePainTrendChart data={yearData} type="movement" />
             </ChartCard>
-            <ChartCard 
-              title="PAIN AT DISCHARGE (TREND)" 
+            <ChartCard
+              title="PAIN AT DISCHARGE (TREND)"
               subtitle="Average pain score upon discharge"
             >
               <DischargePainTrendChart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title="AGE VS INITIAL PAIN" 
+            <ChartCard
+              title="AGE VS INITIAL PAIN"
               subtitle="Correlation between age and initial pain score"
             >
               <AgeVsInitialPainScatterChart data={filteredData} />
@@ -317,38 +317,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
       case 'effectiveness':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard 
-              title={<BilingualTitle 
-                eng="Patients with Resting Pain ≥ 4 (Frequency ≥ 3 in 24h)" 
-                thai="อัตราผู้ป่วยที่มี pain score at rest ≥ 4 คะแนน มากกว่าหรือเท่ากับ 3 ครั้งใน 24 ชั่วโมง" 
-              />} 
+            <ChartCard
+              title={<BilingualTitle
+                eng="Patients with Resting Pain ≥ 4 (Frequency ≥ 3 in 24h)"
+                thai="อัตราผู้ป่วยที่มี pain score at rest ≥ 4 คะแนน มากกว่าหรือเท่ากับ 3 ครั้งใน 24 ชั่วโมง"
+              />}
               subtitle="Target ≤ 10%"
             >
               <SeverePainRest24Chart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title={<BilingualTitle 
-                eng="Patients with Movement Pain ≥ 4 (Frequency ≥ 3 in 24h)" 
-                thai="อัตราผู้ป่วยที่มี pain score on movement ≥ 4 คะแนน มากกว่าหรือเท่ากับ 3 ครั้งใน 24 ชั่วโมง" 
-              />} 
+            <ChartCard
+              title={<BilingualTitle
+                eng="Patients with Movement Pain ≥ 4 (Frequency ≥ 3 in 24h)"
+                thai="อัตราผู้ป่วยที่มี pain score on movement ≥ 4 คะแนน มากกว่าหรือเท่ากับ 3 ครั้งใน 24 ชั่วโมง"
+              />}
               subtitle="Target < 15%"
             >
               <SeverePainMovement24Chart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title={<BilingualTitle 
-                eng="Patients with Resting Pain ≥ 4 (Frequency ≥ 5 in 72h)" 
-                thai="อัตราผู้ป่วยที่มี pain score at rest ≥ 4 คะแนน มากกว่าหรือเท่ากับ 5 ครั้งใน 72 ชั่วโมง" 
-              />} 
+            <ChartCard
+              title={<BilingualTitle
+                eng="Patients with Resting Pain ≥ 4 (Frequency ≥ 5 in 72h)"
+                thai="อัตราผู้ป่วยที่มี pain score at rest ≥ 4 คะแนน มากกว่าหรือเท่ากับ 5 ครั้งใน 72 ชั่วโมง"
+              />}
               subtitle="Target ≤ 10%"
             >
               <SeverePainRest72Chart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title={<BilingualTitle 
-                eng="Patients with Movement Pain ≥ 4 (Frequency ≥ 5 in 72h)" 
-                thai="อัตราผู้ป่วยที่มี pain score on movement ≥ 4 คะแนน มากกว่าหรือเท่ากับ 5 ครั้งใน 72 ชั่วโมง" 
-              />} 
+            <ChartCard
+              title={<BilingualTitle
+                eng="Patients with Movement Pain ≥ 4 (Frequency ≥ 5 in 72h)"
+                thai="อัตราผู้ป่วยที่มี pain score on movement ≥ 4 คะแนน มากกว่าหรือเท่ากับ 5 ครั้งใน 72 ชั่วโมง"
+              />}
               subtitle="Target ≤ 10%"
             >
               <SeverePainMovement72Chart data={yearData} />
@@ -378,26 +378,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
       case 'experience':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
-            <ChartCard 
-              title="PATIENT SATISFACTION SCORE" 
+            <ChartCard
+              title="PATIENT SATISFACTION SCORE"
               subtitle="Distribution of patient satisfaction (1-5 Scale)"
             >
               <SatisfactionScoreDistributionChart data={filteredData} />
             </ChartCard>
-            <ChartCard 
-              title="SATISFACTION TRENDS" 
+            <ChartCard
+              title="SATISFACTION TRENDS"
               subtitle="Monthly average satisfaction score & yearly summary"
             >
               <SatisfactionMonthlyTrendChart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title="PATIENT-REPORTED OUTCOMES (PROMS)" 
+            <ChartCard
+              title="PATIENT-REPORTED OUTCOMES (PROMS)"
               subtitle="Avg % improvement in QoL/Function by Month"
             >
               <PromsImprovementChart data={yearData} />
             </ChartCard>
-            <ChartCard 
-              title="PAIN INTERFERENCE WITH ADL" 
+            <ChartCard
+              title="PAIN INTERFERENCE WITH ADL"
               subtitle="Average interference score (0-10) by activity type"
             >
               <PainInterferenceRadarChart data={filteredData} />
@@ -418,7 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DefinitionCard 
+              <DefinitionCard
                 title="Resting Pain Management (24h)"
                 thaiTitle="อัตราความถี่ความเจ็บปวดขณะพักในช่วง 24 ชั่วโมงแรก"
                 description="Percentage of patients experiencing significant pain (Score ≥ 4) at rest multiple times within the first 24 hours post-operatively."
@@ -428,7 +428,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
                 target="≤ 10%"
               />
 
-              <DefinitionCard 
+              <DefinitionCard
                 title="Movement Pain Management (24h)"
                 thaiTitle="อัตราความถี่ความเจ็บปวดขณะเคลื่อนไหวในช่วง 24 ชั่วโมงแรก"
                 description="Percentage of patients experiencing significant pain (Score ≥ 4) during movement multiple times within the first 24 hours post-operatively."
@@ -438,7 +438,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
                 target="< 15%"
               />
 
-              <DefinitionCard 
+              <DefinitionCard
                 title="Resting Pain Management (72h)"
                 thaiTitle="อัตราความถี่ความเจ็บปวดขณะพักในช่วง 72 ชั่วโมง"
                 description="Percentage of patients experiencing significant pain (Score ≥ 4) at rest frequently across the first 72 hours of monitoring."
@@ -448,7 +448,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
                 target="≤ 10%"
               />
 
-              <DefinitionCard 
+              <DefinitionCard
                 title="Movement Pain Management (72h)"
                 thaiTitle="อัตราความถี่ความเจ็บปวดขณะเคลื่อนไหวในช่วง 72 ชั่วโมง"
                 description="Percentage of patients experiencing significant pain (Score ≥ 4) during movement frequently across the first 72 hours of monitoring."
@@ -460,13 +460,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ rawData, year, month, acti
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/10 rounded-2xl p-6 border border-blue-100 dark:border-blue-900/30 flex items-start gap-4">
-               <Info className="text-blue-600 shrink-0 mt-1" size={24} />
-               <div className="space-y-1">
-                 <h5 className="font-bold text-blue-900 dark:text-blue-300 text-sm">Measurement Methodology / วิธีการวัดผล</h5>
-                 <p className="text-xs text-blue-800/70 dark:text-blue-400/70 leading-relaxed">
-                   Data is collected longitudinally from clinical observation charts. Pain is assessed on a Numeric Rating Scale (0-10). 'Success' is defined as maintaining patients below the threshold or ensuring frequency of severe breakthrough pain stays within target percentages across the whole patient population.
-                 </p>
-               </div>
+              <Info className="text-blue-600 shrink-0 mt-1" size={24} />
+              <div className="space-y-1">
+                <h5 className="font-bold text-blue-900 dark:text-blue-300 text-sm">Measurement Methodology / วิธีการวัดผล</h5>
+                <p className="text-xs text-blue-800/70 dark:text-blue-400/70 leading-relaxed">
+                  Data is collected longitudinally from clinical observation charts. Pain is assessed on a Numeric Rating Scale (0-10). 'Success' is defined as maintaining patients below the threshold or ensuring frequency of severe breakthrough pain stays within target percentages across the whole patient population.
+                </p>
+              </div>
             </div>
           </div>
         );

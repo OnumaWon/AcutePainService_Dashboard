@@ -10,11 +10,11 @@ import { Menu } from 'lucide-react';
 function App() {
     const [activeSection, setActiveSection] = useState('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [rawData, setRawData] = useState<CaseData[]>(() => generateMockData(500));
-    const [year, setYear] = useState(2025);
-    const [month, setMonth] = useState<number | 'All'>('All');
+    const [rawData] = useState<CaseData[]>(() => generateMockData(500));
+    const [year] = useState(2025);
+    const [month] = useState<number | 'All'>('All');
 
-    const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUpload = (_e: React.ChangeEvent<HTMLInputElement>) => {
         // For now, mock upload by regenerating data
         console.log("Upload triggered - continuing with mock data");
         // In a real app, parse Excel here

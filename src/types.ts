@@ -45,9 +45,17 @@ export enum AdverseEventType {
 }
 
 export interface PainScore {
-    h0_24: number | null;
-    h24_48: number | null;
-    h48_72: number | null;
+    h0_24: number | null | undefined;
+    h24_48: number | null | undefined;
+    h48_72: number | null | undefined;
+}
+
+export interface ChatMessage {
+    id: string;
+    role: 'user' | 'model';
+    text: string;
+    timestamp: Date;
+    isThinking?: boolean;
 }
 
 export interface QualityIndicators {

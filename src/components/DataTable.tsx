@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { CaseData, TraumaType, Gender, DrugGroup } from '../types';
 // Added ClipboardCheck to the imports to resolve "Cannot find name 'ClipboardCheck'" error.
-import { X, AlertCircle, CheckCircle2, Star, TrendingUp, Pill, Info, ClipboardCheck } from 'lucide-react';
+import { X, AlertCircle, CheckCircle2, Star, TrendingUp, Info, ClipboardCheck } from 'lucide-react';
 import { MONTH_NAMES } from '../utils/chartUtils';
 
 interface DataTableProps {
@@ -31,8 +31,8 @@ export const DataTable: React.FC<DataTableProps> = ({ data, filterCriteria, onCl
     return groups;
   }, [data]);
 
-  const renderPainBadge = (score: number | null) => {
-    if (score === null) return <span className="text-slate-300">-</span>;
+  const renderPainBadge = (score: number | null | undefined) => {
+    if (score == null) return <span className="text-slate-300">-</span>;
     const colorClass = score >= 7 ? 'text-red-600' : score >= 4 ? 'text-amber-600' : 'text-green-600';
     return <span className={`font-bold ${colorClass}`}>{score.toFixed(1)}</span>;
   };
@@ -126,8 +126,8 @@ export const DataTable: React.FC<DataTableProps> = ({ data, filterCriteria, onCl
                       {/* Trauma */}
                       <td className="px-4 py-4 align-top">
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${row.traumaType === TraumaType.Trauma
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                          : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
                           }`}>
                           {row.traumaType}
                         </span>
@@ -138,7 +138,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, filterCriteria, onCl
                         <div className="flex flex-wrap gap-1 max-w-[180px]">
                           {row.drugGroups.map(dg => (
                             <span key={dg} className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${dg === DrugGroup.Opioids ? 'bg-red-50 text-red-600' :
-                                dg === DrugGroup.NonOpioids ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                              dg === DrugGroup.NonOpioids ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
                               }`}>
                               {dg}
                             </span>

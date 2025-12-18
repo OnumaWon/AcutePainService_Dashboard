@@ -1,11 +1,11 @@
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, ScatterChart, Scatter, ReferenceLine,
   LabelList, AreaChart, Area, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
-import { CaseData, OperationType, AdverseEventType, Gender, PostOpPainMgmt, DrugGroup, TraumaType } from '../../types';
+import { CaseData, OperationType, Gender, PostOpPainMgmt, TraumaType } from '../../types';
 import { COLORS, MONTH_NAMES, formatVal, cleanMedName } from '../../utils/chartUtils';
 
 /**
@@ -96,7 +96,7 @@ const StandardTooltip = ({ active, payload, label }: any) => {
  * Standard Pie Label
  */
 const renderPieLabel = (props: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent, value, fill, name } = props;
+  const { cx, cy, midAngle, outerRadius, percent, value, fill, name } = props;
   const RADIAN = Math.PI / 180;
   const sin = Math.sin(-RADIAN * midAngle);
   const cos = Math.cos(-RADIAN * midAngle);
@@ -352,8 +352,8 @@ export const MultiLinePainTrendChart = ({ data, type, showTable }: { data: CaseD
 const calculateGroupedPainData = (data: CaseData[], categoryField: keyof CaseData, categoryValues: any[]) => {
   return categoryValues.map(cat => {
     const catData = data.filter(d => (d as any)[categoryField] === cat);
-    const getAvg = (path: (d: CaseData) => number | null) => {
-      const vals = catData.map(path).filter(v => v !== null) as number[];
+    const getAvg = (path: (d: CaseData) => number | null | undefined) => {
+      const vals = catData.map(path).filter(v => v !== null && v !== undefined) as number[];
       return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     };
 
@@ -462,17 +462,17 @@ export const PainByOpStatusChart = ({ data, showTable }: { data: CaseData[], sho
 
       const mild = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
-        return p !== null && p < 4;
+        return p != null && p < 4;
       }).length;
 
       const moderate = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
-        return p !== null && p >= 4 && p < 7;
+        return p != null && p >= 4 && p < 7;
       }).length;
 
       const severe = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
-        return p !== null && p >= 7;
+        return p != null && p >= 7;
       }).length;
 
       return {
@@ -751,7 +751,7 @@ export const PainTrendChart = ({ data, type, hours = '24', showTable }: { data: 
       if (!mths.has(m)) mths.set(m, { count: 0, sum: 0 });
       const scores = d.painScores[type];
       const val = hours === '24' ? scores.h0_24 : (scores.h48_72 ?? scores.h24_48);
-      if (val !== null) { mths.get(m)!.count++; mths.get(m)!.sum += val; }
+      if (val != null) { mths.get(m)!.count++; mths.get(m)!.sum += val; }
     });
     return Array.from(mths.keys()).sort((a, b) => a - b).map(m => ({
       name: MONTH_NAMES[m],
