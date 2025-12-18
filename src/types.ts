@@ -4,9 +4,26 @@ export enum PatientType { Inpatient = 'Inpatient', Outpatient = 'Outpatient' }
 export enum PayerType { SelfPay = 'SelfPay', Insurance = 'Insurance', Government = 'Government' }
 export enum Nationality { Thai = 'Thai', Foreigner = 'Foreigner' }
 export enum TraumaType { Trauma = 'Trauma', NonTrauma = 'NonTrauma' }
-export enum PostOpPainMgmt { PCA = 'PCA', Epidural = 'Epidural', Oral = 'Oral', IV = 'IV' }
+export enum PostOpPainMgmt {
+    PCA = 'PCA',
+    Epidural = 'Epidural',
+    Oral = 'Oral',
+    IV = 'IV',
+    IV_Bolus = 'IV Bolus',
+    IV_PCA = 'IV PCA',
+    NerveBlock = 'Nerve Block',
+    ManageBySurgeon = 'Managed by Surgeon',
+    RequestAnesthesiologist = 'Request Anesthesiologist'
+}
 export enum Specialty { Ortho = 'Ortho', GenSurg = 'GenSurg', Uro = 'Uro', Gyn = 'Gyn' }
-export enum OperationType { Major = 'Major', Minor = 'Minor', Emergency = 'Emergency' }
+export enum OperationType {
+    Major = 'Major',
+    Minor = 'Minor',
+    Emergency = 'Emergency',
+    Elective = 'Elective',
+    NonElective = 'Non-Elective',
+    NonOperation = 'Non-Operation'
+}
 export enum OrthoType { TKA = 'TKA', THA = 'THA', Spine = 'Spine', Other = 'Other' }
 export enum DrugGroup { Opioids = 'Opioids', NonOpioids = 'NonOpioids', Adjuvants = 'Adjuvants' }
 export enum AdverseEventType {
@@ -28,9 +45,9 @@ export enum AdverseEventType {
 }
 
 export interface PainScore {
-    h0_24: number;
-    h24_48: number;
-    h48_72: number;
+    h0_24: number | null;
+    h24_48: number | null;
+    h48_72: number | null;
 }
 
 export interface QualityIndicators {
@@ -79,4 +96,8 @@ export interface CaseData {
     promsImprovement: number;
     painInterference: PainInterference;
     patientFeedback: string | null;
+    drugGroupLabel?: string;
+    opioidsText?: string;
+    nonOpioidsText?: string;
+    adjuvantsText?: string;
 }

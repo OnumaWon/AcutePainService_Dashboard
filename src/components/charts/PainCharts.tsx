@@ -5,7 +5,7 @@ import {
   LineChart, Line, PieChart, Pie, Cell, ScatterChart, Scatter, ReferenceLine,
   LabelList, AreaChart, Area, ZAxis, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
-import { CaseData, OperationType, AdverseEventType, Gender, PostOpPainMgmt, DrugGroup } from '../../types';
+import { CaseData, OperationType, AdverseEventType, Gender, PostOpPainMgmt, DrugGroup, TraumaType } from '../../types';
 import { COLORS, MONTH_NAMES, formatVal, cleanMedName } from '../../utils/chartUtils';
 
 /**
@@ -15,13 +15,13 @@ export const SimpleTable = ({ data, columns }: { data: any[], columns?: string[]
   if (!data || data.length === 0) {
     return <div className="text-slate-400 text-center py-8 italic">No data available for this period.</div>;
   }
-  
+
   const allKeys = Object.keys(data[0]);
-  
-  const displayKeys = columns || allKeys.filter(k => 
-    !k.endsWith('_num') && 
-    !k.endsWith('_den') && 
-    k !== 'fill' && 
+
+  const displayKeys = columns || allKeys.filter(k =>
+    !k.endsWith('_num') &&
+    !k.endsWith('_den') &&
+    k !== 'fill' &&
     k !== 'breakdown' &&
     k !== 'total' &&
     k !== 'z' &&
@@ -63,7 +63,7 @@ export const SimpleTable = ({ data, columns }: { data: any[], columns?: string[]
 const StandardTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    
+
     return (
       <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg text-xs z-50 min-w-[180px]">
         <p className="font-bold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1">
@@ -120,21 +120,21 @@ const renderPieLabel = (props: any) => {
 
 // --- MODALITY COMPONENTS (MATCHING IMAGE.PNG) ---
 
-const MODALITY_COLORS = {
+const MODALITY_COLORS: Record<string, string> = {
   [PostOpPainMgmt.ManageBySurgeon]: '#3b82f6', // Blue
   [PostOpPainMgmt.RequestAnesthesiologist]: '#f59e0b', // Yellow/Orange
   // Previous colors kept for potential other uses
-  [PostOpPainMgmt.Epidural]: '#8b5cf6', 
-  [PostOpPainMgmt.IV_Bolus]: '#ef4444', 
-  [PostOpPainMgmt.IV_PCA]: '#f59e0b',   
-  [PostOpPainMgmt.NerveBlock]: '#3b82f6', 
-  [PostOpPainMgmt.Oral]: '#10b981'      
+  [PostOpPainMgmt.Epidural]: '#8b5cf6',
+  [PostOpPainMgmt.IV_Bolus]: '#ef4444',
+  [PostOpPainMgmt.IV_PCA]: '#f59e0b',
+  [PostOpPainMgmt.NerveBlock]: '#3b82f6',
+  [PostOpPainMgmt.Oral]: '#10b981'
 };
 
 export const ModalityDistributionDonutChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const chartData = useMemo(() => {
     const targets = [PostOpPainMgmt.ManageBySurgeon, PostOpPainMgmt.RequestAnesthesiologist];
-    
+
     // If no data, provide mock distribution for these two categories
     if (!data || data.length === 0) {
       const mock = [
@@ -144,7 +144,7 @@ export const ModalityDistributionDonutChart = ({ data, showTable }: { data: Case
       const total = mock.reduce((a, b) => a + b.value, 0);
       return mock.map(m => ({ ...m, 'Percentage (%)': (m.value / total) * 100 }));
     }
-    
+
     const counts: Record<string, number> = {
       [PostOpPainMgmt.ManageBySurgeon]: 0,
       [PostOpPainMgmt.RequestAnesthesiologist]: 0
@@ -155,11 +155,11 @@ export const ModalityDistributionDonutChart = ({ data, showTable }: { data: Case
         counts[d.postOpPainMgmt]++;
       }
     });
-    
+
     const total = counts[PostOpPainMgmt.ManageBySurgeon] + counts[PostOpPainMgmt.RequestAnesthesiologist];
-    
-    return targets.map(name => ({ 
-      name, 
+
+    return targets.map(name => ({
+      name,
       value: counts[name],
       'Percentage (%)': total > 0 ? (counts[name] / total) * 100 : 0
     }));
@@ -185,7 +185,7 @@ export const ModalityDistributionDonutChart = ({ data, showTable }: { data: Case
           ))}
         </Pie>
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={40} iconType="circle" wrapperStyle={{fontSize: '10px'}} />
+        <Legend verticalAlign="bottom" height={40} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -194,7 +194,7 @@ export const ModalityDistributionDonutChart = ({ data, showTable }: { data: Case
 export const ModalityTrendsLineChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const trendData = useMemo(() => {
     const targets = [PostOpPainMgmt.ManageBySurgeon, PostOpPainMgmt.RequestAnesthesiologist];
-    
+
     // If no data, provide mock monthly trends
     if (!data || data.length === 0) {
       return MONTH_NAMES.map((name, i) => ({
@@ -227,10 +227,10 @@ export const ModalityTrendsLineChart = ({ data, showTable }: { data: CaseData[],
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={trendData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <YAxis tick={{fontSize: 10}} axisLine={false} tickLine={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{fontSize: '10px'}} />
+        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{ fontSize: '10px' }} />
         {[PostOpPainMgmt.ManageBySurgeon, PostOpPainMgmt.RequestAnesthesiologist].map((name) => (
           <Line key={name} type="monotone" dataKey={name} stroke={MODALITY_COLORS[name]} strokeWidth={2} dot={{ r: 3 }} />
         ))}
@@ -270,9 +270,9 @@ export const MedicationGroupUsageBarChart = ({ data, showTable }: { data: CaseDa
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <YAxis tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <Tooltip cursor={{fill: 'transparent'}} content={<StandardTooltip />} />
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: 'transparent' }} content={<StandardTooltip />} />
         <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={120}>
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -287,13 +287,13 @@ export const MedicationGroupUsageBarChart = ({ data, showTable }: { data: CaseDa
 
 export const MultiLinePainTrendChart = ({ data, type, showTable }: { data: CaseData[], type: 'rest' | 'movement', showTable?: boolean }) => {
   const [opFilter, setOpFilter] = useState<string>('All');
-  
+
   const chartData = useMemo(() => {
     const filtered = opFilter === 'All' ? data : data.filter(d => d.operationType === opFilter);
     const mths = new Map<number, any>();
-    
+
     for (let i = 0; i < 12; i++) {
-        mths.set(i, { name: MONTH_NAMES[i], h24_sum: 0, h24_count: 0, h48_sum: 0, h48_count: 0, h72_sum: 0, h72_count: 0 });
+      mths.set(i, { name: MONTH_NAMES[i], h24_sum: 0, h24_count: 0, h48_sum: 0, h48_count: 0, h72_sum: 0, h72_count: 0 });
     }
 
     filtered.forEach((d) => {
@@ -320,7 +320,7 @@ export const MultiLinePainTrendChart = ({ data, type, showTable }: { data: CaseD
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-end mb-4 pr-2">
-        <select 
+        <select
           value={opFilter}
           onChange={(e) => setOpFilter(e.target.value)}
           className="text-[10px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded px-2 py-1 outline-none font-medium text-slate-600 dark:text-slate-300"
@@ -333,10 +333,10 @@ export const MultiLinePainTrendChart = ({ data, type, showTable }: { data: CaseD
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis dataKey="name" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
-            <YAxis domain={['auto', 'auto']} tick={{fontSize: 9}} axisLine={false} tickLine={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
             <Tooltip content={<StandardTooltip />} />
-            <Legend verticalAlign="top" align="center" height={36} iconType="plainline" wrapperStyle={{fontSize: '10px'}} />
+            <Legend verticalAlign="top" align="center" height={36} iconType="plainline" wrapperStyle={{ fontSize: '10px' }} />
             <Line type="monotone" dataKey="24h" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
             <Line type="monotone" dataKey="48h" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
             <Line type="monotone" dataKey="72h" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
@@ -374,17 +374,17 @@ const calculateGroupedPainData = (data: CaseData[], categoryField: keyof CaseDat
 
 export const PainByGenderChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const chartData = useMemo(() => calculateGroupedPainData(data, 'patientGender', [Gender.Male, Gender.Female]), [data]);
-  
+
   if (showTable) return <SimpleTable data={chartData} />;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10, fontWeight: 600}} axisLine={false} tickLine={false} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
+        <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{fontSize: '9px', paddingTop: '10px'}} />
+        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{ fontSize: '9px', paddingTop: '10px' }} />
         <Bar dataKey="Discharge" fill="#10b981" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 24h" fill="#f59e0b" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 48h" fill="#fbbf24" radius={[2, 2, 0, 0]} />
@@ -398,18 +398,18 @@ export const PainByGenderChart = ({ data, showTable }: { data: CaseData[], showT
 };
 
 export const PainByTraumaTypeChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
-  const chartData = useMemo(() => calculateGroupedPainData(data, 'traumaType', ['TRAUMA', 'NON TRAUMA']), [data]);
-  
+  const chartData = useMemo(() => calculateGroupedPainData(data, 'traumaType', [TraumaType.Trauma, TraumaType.NonTrauma]), [data]);
+
   if (showTable) return <SimpleTable data={chartData} />;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10, fontWeight: 600}} axisLine={false} tickLine={false} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
+        <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{fontSize: '9px', paddingTop: '10px'}} />
+        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{ fontSize: '9px', paddingTop: '10px' }} />
         <Bar dataKey="Discharge" fill="#10b981" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 24h" fill="#f59e0b" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 48h" fill="#fbbf24" radius={[2, 2, 0, 0]} />
@@ -436,10 +436,10 @@ export const PainByDrugGroupChart = ({ data, showTable }: { data: CaseData[], sh
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10, fontWeight: 600}} axisLine={false} tickLine={false} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
+        <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'Avg Pain', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10 }} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{fontSize: '9px', paddingTop: '10px'}} />
+        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{ fontSize: '9px', paddingTop: '10px' }} />
         <Bar dataKey="Discharge" fill="#10b981" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 24h" fill="#f59e0b" radius={[2, 2, 0, 0]} />
         <Bar dataKey="Move 48h" fill="#fbbf24" radius={[2, 2, 0, 0]} />
@@ -455,21 +455,21 @@ export const PainByDrugGroupChart = ({ data, showTable }: { data: CaseData[], sh
 export const PainByOpStatusChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const chartData = useMemo(() => {
     const opTypes = [OperationType.Elective, OperationType.NonElective, OperationType.NonOperation];
-    
+
     return opTypes.map(op => {
       const opData = data.filter(d => d.operationType === op);
       const total = opData.length || 1;
-      
+
       const mild = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
         return p !== null && p < 4;
       }).length;
-      
+
       const moderate = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
         return p !== null && p >= 4 && p < 7;
       }).length;
-      
+
       const severe = opData.filter(d => {
         const p = d.painScores.rest.h0_24;
         return p !== null && p >= 7;
@@ -490,10 +490,10 @@ export const PainByOpStatusChart = ({ data, showTable }: { data: CaseData[], sho
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <YAxis unit="%" domain={[0, 100]} tick={{fontSize: 10}} axisLine={false} tickLine={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis unit="%" domain={[0, 100]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{fontSize: '10px'}} />
+        <Legend verticalAlign="bottom" height={36} iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
         <Bar dataKey="Mild" fill="#10b981" radius={[4, 4, 0, 0]} />
         <Bar dataKey="Moderate" fill="#f59e0b" radius={[4, 4, 0, 0]} />
         <Bar dataKey="Severe" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -525,9 +525,9 @@ export const SatisfactionScoreDistributionChart = ({ data, showTable }: { data: 
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <YAxis tick={{fontSize: 10}} axisLine={false} tickLine={false} />
-        <Tooltip cursor={{fill: '#f8fafc'}} content={<StandardTooltip />} />
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: '#f8fafc' }} content={<StandardTooltip />} />
         <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} barSize={60} />
       </BarChart>
     </ResponsiveContainer>
@@ -537,7 +537,7 @@ export const SatisfactionScoreDistributionChart = ({ data, showTable }: { data: 
 export const SatisfactionMonthlyTrendChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const trend = useMemo(() => {
     const mths = new Map<number, { sum: number, count: number }>();
-    for(let i=0; i<12; i++) mths.set(i, { sum: 0, count: 0 });
+    for (let i = 0; i < 12; i++) mths.set(i, { sum: 0, count: 0 });
 
     data.forEach(d => {
       const m = new Date(d.date).getMonth();
@@ -560,10 +560,10 @@ export const SatisfactionMonthlyTrendChart = ({ data, showTable }: { data: CaseD
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={trend} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
-        <YAxis domain={[0, 10]} tick={{fontSize: 10}} axisLine={false} tickLine={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+        <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{fontSize: '9px'}} />
+        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{ fontSize: '9px' }} />
         <Line type="monotone" dataKey="Score" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3, fill: '#3b82f6' }} />
       </LineChart>
     </ResponsiveContainer>
@@ -573,7 +573,7 @@ export const SatisfactionMonthlyTrendChart = ({ data, showTable }: { data: CaseD
 export const PromsImprovementChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const trend = useMemo(() => {
     const mths = new Map<number, { sum: number, count: number }>();
-    for(let i=0; i<12; i++) mths.set(i, { sum: 0, count: 0 });
+    for (let i = 0; i < 12; i++) mths.set(i, { sum: 0, count: 0 });
 
     data.forEach(d => {
       const m = new Date(d.date).getMonth();
@@ -596,10 +596,10 @@ export const PromsImprovementChart = ({ data, showTable }: { data: CaseData[], s
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={trend} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
-        <YAxis domain={[0, 40]} tick={{fontSize: 10}} axisLine={false} tickLine={false} unit="%" />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+        <YAxis domain={[0, 40]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} unit="%" />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{fontSize: '9px'}} />
+        <Legend verticalAlign="top" align="right" height={36} iconType="plainline" wrapperStyle={{ fontSize: '9px' }} />
         <Line type="monotone" dataKey="Improvement %" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3, fill: '#3b82f6' }} />
       </LineChart>
     </ResponsiveContainer>
@@ -645,8 +645,8 @@ export const PainInterferenceRadarChart = ({ data, showTable }: { data: CaseData
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
         <PolarGrid stroke="#e2e8f0" />
-        <PolarAngleAxis dataKey="subject" tick={{fontSize: 9, fill: '#64748b'}} />
-        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{fontSize: 8}} />
+        <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: '#64748b' }} />
+        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fontSize: 8 }} />
         <Radar
           name="Average Score"
           dataKey="A"
@@ -679,21 +679,21 @@ export const AgeVsInitialPainScatterChart = ({ data, showTable }: { data: CaseDa
     <ResponsiveContainer width="100%" height="100%">
       <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-        <XAxis 
-          type="number" 
-          dataKey="age" 
-          name="Age" 
-          unit=" yrs" 
-          domain={[0, 100]} 
-          tick={{fontSize: 9}} 
-          label={{ value: 'Age (yrs)', position: 'insideBottom', offset: -5, fontSize: 10 }} 
+        <XAxis
+          type="number"
+          dataKey="age"
+          name="Age"
+          unit=" yrs"
+          domain={[0, 100]}
+          tick={{ fontSize: 9 }}
+          label={{ value: 'Age (yrs)', position: 'insideBottom', offset: -5, fontSize: 10 }}
         />
-        <YAxis 
-          type="number" 
-          dataKey="pain" 
-          name="Pain" 
-          domain={['auto', 'auto']} 
-          tick={{fontSize: 9}}
+        <YAxis
+          type="number"
+          dataKey="pain"
+          name="Pain"
+          domain={['auto', 'auto']}
+          tick={{ fontSize: 9 }}
           label={{ value: 'Pain Score', angle: -90, position: 'insideLeft', fontSize: 10 }}
         />
         <ZAxis type="number" dataKey="z" range={[50, 50]} />
@@ -713,10 +713,10 @@ export const OperationTypeChart = ({ data, showTable }: { data: CaseData[], show
   if (showTable) return <SimpleTable data={chartData} />;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData} margin={{ top: 20, bottom: 5 }}>
+      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" tick={{fontSize: 9}} />
-        <YAxis tick={{fontSize: 9}} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+        <YAxis tick={{ fontSize: 9 }} />
         <Tooltip content={<StandardTooltip />} />
         <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
       </BarChart>
@@ -753,8 +753,8 @@ export const PainTrendChart = ({ data, type, hours = '24', showTable }: { data: 
       const val = hours === '24' ? scores.h0_24 : (scores.h48_72 ?? scores.h24_48);
       if (val !== null) { mths.get(m)!.count++; mths.get(m)!.sum += val; }
     });
-    return Array.from(mths.keys()).sort((a,b)=>a-b).map(m => ({ 
-      name: MONTH_NAMES[m], 
+    return Array.from(mths.keys()).sort((a, b) => a - b).map(m => ({
+      name: MONTH_NAMES[m],
       'Avg Pain': mths.get(m)!.sum / (mths.get(m)!.count || 1)
     }));
   }, [data, type, hours]);
@@ -763,8 +763,8 @@ export const PainTrendChart = ({ data, type, hours = '24', showTable }: { data: 
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" tick={{fontSize: 9}} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 9}} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} />
         <Tooltip content={<StandardTooltip />} />
         <Area type="monotone" dataKey="Avg Pain" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} />
       </AreaChart>
@@ -831,9 +831,12 @@ export const SpecialtyPieChart = ({ data, showTable }: { data: CaseData[], showT
 
 export const TraumaTypePieChart = ({ data, showTable }: { data: CaseData[], showTable?: boolean }) => {
   const chartData = useMemo(() => {
-    const c: Record<string, number> = {};
-    data.forEach((d) => { if (d.traumaType !== 'Other') c[d.traumaType] = (c[d.traumaType] || 0) + 1; });
-    return Object.entries(c).map(([name, value]) => ({ name, value }));
+    const trauma = data.filter(d => d.traumaType === TraumaType.Trauma).length;
+    const nontrauma = data.filter(d => d.traumaType === TraumaType.NonTrauma).length;
+    return [
+      { name: 'Trauma', value: trauma, fill: '#f59e0b' },
+      { name: 'Non-Trauma', value: nontrauma, fill: '#3b82f6' }
+    ];
   }, [data]);
   if (showTable) return <SimpleTable data={chartData} />;
   return (
@@ -853,23 +856,23 @@ export const TraumaTypeMonthlyTrendChart = ({ data, showTable }: { data: CaseDat
     const mths = new Map<number, any>();
     data.forEach((d) => {
       const m = new Date(d.date).getMonth();
-      if (!mths.has(m)) mths.set(m, { name: MONTH_NAMES[m], TRAUMA: 0, 'NON TRAUMA': 0 });
-      if (d.traumaType === 'TRAUMA') mths.get(m).TRAUMA++;
-      else if (d.traumaType === 'NON TRAUMA') mths.get(m)['NON TRAUMA']++;
+      if (!mths.has(m)) mths.set(m, { name: MONTH_NAMES[m], [TraumaType.Trauma]: 0, [TraumaType.NonTrauma]: 0 });
+      if (d.traumaType === TraumaType.Trauma) mths.get(m)[TraumaType.Trauma]++;
+      else if (d.traumaType === TraumaType.NonTrauma) mths.get(m)[TraumaType.NonTrauma]++;
     });
-    return Array.from(mths.keys()).sort((a,b)=>a-b).map(m => mths.get(m));
+    return Array.from(mths.keys()).sort((a, b) => a - b).map(m => mths.get(m));
   }, [data]);
   if (showTable) return <SimpleTable data={trend} />;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={trend} margin={{ top: 10, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" tick={{fontSize: 9}} />
-        <YAxis tick={{fontSize: 9}} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+        <YAxis tick={{ fontSize: 9 }} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend wrapperStyle={{fontSize: '9px'}} />
-        <Bar dataKey="TRAUMA" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-        <Bar dataKey="NON TRAUMA" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+        <Legend wrapperStyle={{ fontSize: '9px' }} />
+        <Bar dataKey={TraumaType.Trauma} fill="#3b82f6" radius={[2, 2, 0, 0]} />
+        <Bar dataKey={TraumaType.NonTrauma} fill="#f59e0b" radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -882,17 +885,17 @@ export const DrugGroupDistributionChart = ({ data, showTable }: { data: CaseData
       const label = d.drugGroupLabel || 'Unspecified';
       c[label] = (c[label] || 0) + 1;
     });
-    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [data]);
   if (showTable) return <SimpleTable data={counts} />;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <PieChart margin={{ top: 10, bottom: 10 }}>
+      <PieChart margin={{ top: 10, right: 30, left: 30, bottom: 10 }}>
         <Pie data={counts} cx="50%" cy="45%" innerRadius={50} outerRadius={80} dataKey="value" label={renderPieLabel} paddingAngle={2}>
           {counts.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
         </Pie>
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="bottom" height={40} wrapperStyle={{fontSize: '10px'}} />
+        <Legend verticalAlign="bottom" height={40} wrapperStyle={{ fontSize: '10px' }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -906,7 +909,7 @@ export const SpecificMedicationBreakdownChart = ({ data, type, showTable }: { da
       const meds = (rawText || '').split(',').map(s => cleanMedName(s)).filter(s => s.length > 1);
       meds.forEach(m => { if (m.toLowerCase() !== 'n/a') c[m] = (c[m] || 0) + 1; });
     });
-    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 10);
+    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
   }, [data, type]);
   const total = counts.reduce((acc, curr) => acc + curr.value, 0);
   if (showTable) return <SimpleTable data={counts} />;
@@ -915,11 +918,11 @@ export const SpecificMedicationBreakdownChart = ({ data, type, showTable }: { da
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={counts} layout="vertical" margin={{ top: 5, right: 80, left: 100, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-        <XAxis type="number" axisLine={false} tick={{fontSize: 9}} />
-        <YAxis type="category" dataKey="name" axisLine={false} tick={{fontSize: 9}} width={90} />
+        <XAxis type="number" axisLine={false} tick={{ fontSize: 9 }} />
+        <YAxis type="category" dataKey="name" axisLine={false} tick={{ fontSize: 9 }} width={90} />
         <Tooltip content={<StandardTooltip />} />
         <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]}>
-          <LabelList dataKey="value" position="right" style={{fontSize: 9, fontWeight: 'bold'}} formatter={(v: number) => `${v} (${total > 0 ? ((v / total) * 100).toFixed(1) : 0}%)`} />
+          <LabelList dataKey="value" position="right" style={{ fontSize: 9, fontWeight: 'bold' }} formatter={(v: any) => `${v} (${total > 0 ? ((Number(v) / total) * 100).toFixed(1) : 0}%)`} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -938,7 +941,7 @@ export const DrugModalityCompositionChart = ({ data, showTable }: { data: CaseDa
       if (d.nonOpioidsText && d.nonOpioidsText.toLowerCase() !== 'n/a') entry['Non-Opioids']++;
       if (d.adjuvantsText && d.adjuvantsText.toLowerCase() !== 'n/a') entry.Adjuvants++;
     });
-    return Array.from(mths.keys()).sort((a,b)=>a-b).map(m => {
+    return Array.from(mths.keys()).sort((a, b) => a - b).map(m => {
       const e = mths.get(m);
       const tot = e.total || 1;
       return { name: e.name, 'Opioids %': (e.Opioids / tot) * 100, 'Non-Opioids %': (e['Non-Opioids'] / tot) * 100, 'Adjuvants %': (e.Adjuvants / tot) * 100 };
@@ -949,10 +952,10 @@ export const DrugModalityCompositionChart = ({ data, showTable }: { data: CaseDa
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" tick={{fontSize: 10}} />
-        <YAxis unit="%" tick={{fontSize: 10}} />
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+        <YAxis unit="%" tick={{ fontSize: 10 }} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend wrapperStyle={{fontSize: '10px'}} />
+        <Legend wrapperStyle={{ fontSize: '10px' }} />
         <Bar dataKey="Opioids %" fill="#ef4444" radius={[4, 4, 0, 0]} />
         <Bar dataKey="Non-Opioids %" fill="#10b981" radius={[4, 4, 0, 0]} />
         <Bar dataKey="Adjuvants %" fill="#f59e0b" radius={[4, 4, 0, 0]} />
@@ -964,27 +967,27 @@ export const DrugModalityCompositionChart = ({ data, showTable }: { data: CaseDa
 export const SeverePainFrequencyChart = ({ data, type, hours, showTable, target = 10, lineColor = '#ef4444' }: { data: CaseData[], type: 'rest' | 'movement', hours: '24' | '72', showTable?: boolean, target?: number, lineColor?: string }) => {
   const trend = useMemo(() => {
     const mths = new Map<number, { count: number, severe: number }>();
-    
+
     data.forEach((d) => {
       const m = new Date(d.date).getMonth();
       if (!mths.has(m)) mths.set(m, { count: 0, severe: 0 });
-      
+
       const threshold = hours === '24' ? 3 : 5;
-      const freq = type === 'rest' 
+      const freq = type === 'rest'
         ? (hours === '24' ? d.qualityIndicators.freqRest24h : d.qualityIndicators.freqRest72h)
         : (hours === '24' ? d.qualityIndicators.freqMovement24h : d.qualityIndicators.freqMovement72h);
-      
+
       mths.get(m)!.count++;
-      
+
       if (freq !== null && freq >= threshold) {
         mths.get(m)!.severe++;
       }
     });
 
-    return Array.from(mths.keys()).sort((a,b)=>a-b).map(m => {
+    return Array.from(mths.keys()).sort((a, b) => a - b).map(m => {
       const monthStats = mths.get(m)!;
-      return { 
-        name: MONTH_NAMES[m], 
+      return {
+        name: MONTH_NAMES[m],
         'Severe Rate %': (monthStats.severe / (monthStats.count || 1)) * 100,
         numerator: monthStats.severe,
         denominator: monthStats.count
@@ -993,13 +996,13 @@ export const SeverePainFrequencyChart = ({ data, type, hours, showTable, target 
   }, [data, type, hours]);
 
   if (showTable) return <SimpleTable data={trend} />;
-  
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={trend}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" tick={{fontSize: 9}} />
-        <YAxis unit="%" tick={{fontSize: 9}} domain={[0, 100]} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+        <YAxis unit="%" tick={{ fontSize: 9 }} domain={[0, 100]} />
         <Tooltip content={<StandardTooltip />} />
         <Line type="monotone" dataKey="Severe Rate %" stroke={lineColor} strokeWidth={3} dot={{ r: 4, fill: lineColor }} />
         <ReferenceLine y={target} stroke="#10b981" strokeDasharray="3 3" strokeWidth={2} label={{ position: 'top', value: `Target ≤ ${target}%`, fill: '#10b981', fontSize: 9, fontWeight: 'bold' }} />
@@ -1032,14 +1035,14 @@ export const SatisfactionChart = ({ data, showTable }: { data: CaseData[], showT
 export const SafetyTrendChart = ({ data, category, showTable }: { data: CaseData[], category: 'General' | 'Severe', showTable?: boolean }) => {
   const trend = useMemo(() => {
     const mths = new Map<number, number>();
-    for(let i=0; i<12; i++) mths.set(i, 0);
+    for (let i = 0; i < 12; i++) mths.set(i, 0);
 
     data.forEach(d => {
       const m = new Date(d.date).getMonth();
       const events = d.adverseEvents.filter(ae => {
         const isSevere = [
-          'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding', 
-          'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block', 
+          'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding',
+          'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block',
           'Catheter Migration', 'LAST (Toxicity)', 'Anaphylaxis'
         ].includes(ae as string);
         return category === 'Severe' ? isSevere : !isSevere;
@@ -1059,10 +1062,10 @@ export const SafetyTrendChart = ({ data, category, showTable }: { data: CaseData
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={trend} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 9}} axisLine={false} tickLine={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="top" align="right" height={30} iconType="plainline" wrapperStyle={{fontSize: '9px', fontWeight: 'bold'}} />
+        <Legend verticalAlign="top" align="right" height={30} iconType="plainline" wrapperStyle={{ fontSize: '9px', fontWeight: 'bold' }} />
         <Line type="monotone" dataKey="Count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3, fill: '#3b82f6' }} />
       </LineChart>
     </ResponsiveContainer>
@@ -1075,17 +1078,17 @@ export const SafetyDistributionChart = ({ data, category, showTable }: { data: C
     data.forEach(d => {
       d.adverseEvents.forEach(ae => {
         const isSevere = [
-          'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding', 
-          'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block', 
+          'Hypotension (Severe)', 'Resp. Depression', 'Hematoma/Bleeding',
+          'Nerve Injury', 'Infection', 'Dural Puncture', 'Prolonged Motor Block',
           'Catheter Migration', 'LAST (Toxicity)', 'Anaphylaxis'
         ].includes(ae as string);
-        
+
         if ((category === 'Severe' && isSevere) || (category === 'General' && !isSevere)) {
           c[ae] = (c[ae] || 0) + 1;
         }
       });
     });
-    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+    return Object.entries(c).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [data, category]);
 
   if (showTable) return <SimpleTable data={counts} />;
@@ -1096,14 +1099,14 @@ export const SafetyDistributionChart = ({ data, category, showTable }: { data: C
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={counts} margin={{ top: 20, right: 10, left: 0, bottom: 40 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis 
-          dataKey="name" 
-          tick={{fontSize: 9}} 
-          interval={0} 
-          angle={-15} 
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 9 }}
+          interval={0}
+          angle={-15}
           textAnchor="end"
         />
-        <YAxis tick={{fontSize: 9}} />
+        <YAxis tick={{ fontSize: 9 }} />
         <Tooltip content={<StandardTooltip />} />
         <Bar dataKey="value" fill={fillColor} radius={[4, 4, 0, 0]} barSize={40} />
       </BarChart>
@@ -1120,12 +1123,12 @@ export const PromsTrendChart = ({ data, showTable }: any) => {
   const trend = useMemo(() => {
     const mths = new Map<number, { count: number, sum: number }>();
     data.forEach((d: any) => { const m = new Date(d.date).getMonth(); if (!mths.has(m)) mths.set(m, { count: 0, sum: 0 }); mths.get(m)!.count++; mths.get(m)!.sum += d.promsImprovement; });
-    return Array.from(mths.keys()).sort((a,b)=>a-b).map(m => ({ name: MONTH_NAMES[m], 'Improvement %': mths.get(m)!.sum / (mths.get(m)!.count || 1) }));
+    return Array.from(mths.keys()).sort((a, b) => a - b).map(m => ({ name: MONTH_NAMES[m], 'Improvement %': mths.get(m)!.sum / (mths.get(m)!.count || 1) }));
   }, [data]);
   if (showTable) return <SimpleTable data={trend} />;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={trend}><XAxis dataKey="name" tick={{fontSize: 9}}/><YAxis domain={['auto', 'auto']} tick={{fontSize: 9}}/><Tooltip content={<StandardTooltip />}/><Line type="monotone" dataKey="Improvement %" stroke="#3b82f6" strokeWidth={2}/></LineChart>
+      <LineChart data={trend}><XAxis dataKey="name" tick={{ fontSize: 9 }} /><YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} /><Tooltip content={<StandardTooltip />} /><Line type="monotone" dataKey="Improvement %" stroke="#3b82f6" strokeWidth={2} /></LineChart>
     </ResponsiveContainer>
   );
 };
@@ -1154,12 +1157,12 @@ export const DischargePainTrendChart = ({ data, showTable }: { data: CaseData[],
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-        <XAxis dataKey="name" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
-        <YAxis domain={['auto', 'auto']} tick={{fontSize: 9}} axisLine={false} tickLine={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+        <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
         <Tooltip content={<StandardTooltip />} />
-        <Legend verticalAlign="top" align="center" height={36} iconType="plainline" wrapperStyle={{fontSize: '10px'}} />
+        <Legend verticalAlign="top" align="center" height={36} iconType="plainline" wrapperStyle={{ fontSize: '10px' }} />
         <Line type="monotone" dataKey="Avg Discharge Pain" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
       </LineChart>
     </ResponsiveContainer>
